@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+  <meta name="theme-color" content="#090d16">
+  <meta name="description" content="Minimalistic, interactive ASCII & Alt Code reference with instant bidirectional search, 0-9999 complete codes, and favorites.">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Alt Codes">
+  
+  <title>ASCII & Alt Code Master (0-9999)</title>
+
+  <!-- PWA Manifest & Icons -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="64x64" href="icons/favicon.png">
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+
+  <!-- Inter & JetBrains Mono Fonts from CDN with local fallbacks -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="theme-dark">
+  <!-- App Container -->
+  <div id="app" class="app-layout">
+    
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="brand-logo">
+          <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="4" width="20" height="16" rx="4"></rect>
+            <path d="M6 10h4"></path>
+            <path d="M8 8v4"></path>
+            <path d="M14 9h4"></path>
+            <path d="M14 15h4"></path>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1 class="brand-title">AltCode <span class="badge-accent">0–9999</span></h1>
+          <p class="brand-sub">ASCII & Alt Key Codes</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button id="btn-guide" class="btn-icon-text" title="How Alt Codes Work" aria-label="Alt Code Guide">
+          <span class="icon">⌨️</span>
+          <span class="btn-label">Alt Guide</span>
+        </button>
+        <button id="btn-install" class="btn-icon-text highlight" style="display: none;" title="Install on Smartphone" aria-label="Install App">
+          <span class="icon">📲</span>
+          <span class="btn-label">Install</span>
+        </button>
+        <button id="btn-theme" class="btn-icon" title="Toggle Light/Dark Theme" aria-label="Toggle Theme">
+          <span id="theme-icon">🌙</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Sticky Control Station -->
+    <div class="sticky-station">
+      
+      <!-- Search & Bidirectional Converter Bar -->
+      <div class="search-section">
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input 
+            type="text" 
+            id="search-input" 
+            class="search-input" 
+            placeholder="Search digits (177, 0137), symbol (±, ‰), or name (plus minus, mu)..." 
+            autocomplete="off" 
+            autocorrect="off" 
+            autocapitalize="off" 
+            spellcheck="false"
+          >
+          <div class="search-badges">
+            <span id="search-mode-badge" class="search-badge" style="display: none;">Mode</span>
+            <button id="search-clear-btn" class="search-clear" style="display: none;" aria-label="Clear search">✕</button>
+          </div>
+        </div>
+
+        <!-- Quick Example Query Pills -->
+        <div class="quick-examples">
+          <span class="examples-label">Try:</span>
+          <button class="pill-example" data-query="plus minus">± plus minus</button>
+          <button class="pill-example" data-query="mu">µ mu</button>
+          <button class="pill-example" data-query="permille">‰ permille</button>
+          <button class="pill-example" data-query="0137">0137</button>
+          <button class="pill-example" data-query="177">177</button>
+          <button class="pill-example" data-query="euro">€ euro</button>
+          <button class="pill-example" data-query="heart">♥ heart</button>
+          <button class="pill-example" data-query="arrow">→ arrow</button>
+        </div>
+      </div>
+
+      <!-- Live Inspector / Detail Card -->
+      <section id="inspector-card" class="inspector-card">
+        <div class="inspector-glyph-box" id="inspector-glyph-box" title="Long press to favorite / Click to copy">
+          <span id="inspector-glyph" class="inspector-glyph">±</span>
+          <span class="inspector-glyph-hint">Tap to copy • Hold for ⭐</span>
+          <div class="hold-ring"></div>
+        </div>
+
+        <div class="inspector-content">
+          <div class="inspector-top-row">
+            <div class="inspector-name-group">
+              <h2 id="inspector-name" class="inspector-name">PLUS-MINUS SIGN</h2>
+              <div class="inspector-tags">
+                <span id="inspector-category" class="tag tag-cat">Math</span>
+                <span id="inspector-code-dec" class="tag tag-code">Code: 177</span>
+                <span id="inspector-code-hex" class="tag tag-hex">U+00B1</span>
+                <span id="inspector-code-html" class="tag tag-html">&amp;plusmn;</span>
+              </div>
+            </div>
+
+            <button id="inspector-fav-btn" class="btn-fav" title="Toggle Favorite" aria-label="Toggle Favorite">
+              <span id="inspector-fav-icon">⭐</span>
+            </button>
+          </div>
+
+          <!-- Alt Code Key Combination Banner -->
+          <div class="alt-key-banner">
+            <div class="alt-key-primary" id="btn-copy-alt" title="Click to copy Alt code">
+              <span class="alt-press-label">Hold</span>
+              <kbd class="kbd-alt">Alt</kbd>
+              <span class="alt-plus">+</span>
+              <kbd class="kbd-num" id="inspector-primary-num">0177</kbd>
+              <span class="copy-badge">📋 Copy</span>
+            </div>
+            
+            <div class="alt-key-secondaries" id="inspector-secondary-alt">
+              <span class="secondary-label">Also:</span>
+              <span class="secondary-pill" id="inspector-sec-pill">OEM: Alt + 241</span>
+            </div>
+          </div>
+
+          <!-- Inspector Action Buttons -->
+          <div class="inspector-actions">
+            <button id="btn-copy-symbol" class="btn-action primary">
+              <span>📋 Copy Symbol</span>
+            </button>
+            <button id="btn-copy-code" class="btn-action secondary">
+              <span>🔢 Copy Code (177)</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Favorite Signs Bar -->
+      <section class="favorites-section">
+        <div class="section-header-compact">
+          <div class="header-left-sub">
+            <span class="section-title">⭐ Favorite Signs</span>
+            <span id="fav-count" class="badge-count">12</span>
+          </div>
+          <span class="fav-instruction">Touch &amp; hold any sign to add/remove</span>
+        </div>
+
+        <div id="favorites-container" class="favorites-container">
+          <!-- Favorite chips dynamically populated -->
+        </div>
+      </section>
+
+    </div><!-- End Sticky Station -->
+
+    <!-- Filter & View Controls -->
+    <div class="controls-bar">
+      <!-- Category Tabs (Horizontal Scrollable) -->
+      <div class="category-tabs" id="category-tabs">
+        <button class="cat-tab active" data-cat="all">All (0-9999)</button>
+        <button class="cat-tab" data-cat="fav">⭐ Favorites</button>
+        <button class="cat-tab" data-cat="ASCII">ASCII (0-127)</button>
+        <button class="cat-tab" data-cat="Latin-1">Latin-1 / ANSI (128-255)</button>
+        <button class="cat-tab" data-cat="Math">Math (±, ÷, √, ∞)</button>
+        <button class="cat-tab" data-cat="Currency">Currency (€, $, £, ‰)</button>
+        <button class="cat-tab" data-cat="Greek">Greek (α, β, µ, π)</button>
+        <button class="cat-tab" data-cat="Arrows">Arrows (←, ↑, →, ↓)</button>
+        <button class="cat-tab" data-cat="Symbols">Symbols (♥, ★, ☺, ☼)</button>
+        <button class="cat-tab" data-cat="Punctuation">Punctuation (“ ”, —, …)</button>
+        <button class="cat-tab" data-cat="Box Drawing">Box &amp; Blocks (─, │, █)</button>
+        <button class="cat-tab" data-cat="Control">Control (NUL, ESC, CR)</button>
+      </div>
+
+      <!-- Quick Range & View Mode Switcher -->
+      <div class="sub-controls">
+        <div class="range-selector">
+          <span class="range-label">Range:</span>
+          <select id="range-select" class="range-select">
+            <option value="all">Complete (0 – 9999)</option>
+            <option value="0-255">0 – 255 (ASCII &amp; ANSI)</option>
+            <option value="256-999">256 – 999 (Extended)</option>
+            <option value="1000-1999">1000 – 1999</option>
+            <option value="2000-2999">2000 – 2999</option>
+            <option value="3000-3999">3000 – 3999</option>
+            <option value="4000-4999">4000 – 4999</option>
+            <option value="5000-5999">5000 – 5999</option>
+            <option value="6000-6999">6000 – 6999</option>
+            <option value="7000-7999">7000 – 7999</option>
+            <option value="8000-8999">8000 – 8999 (Math, Arrows, Punctuation)</option>
+            <option value="9000-9999">9000 – 9999 (Symbols &amp; Shapes)</option>
+          </select>
+
+          <!-- Quick Jump Input -->
+          <div class="jump-box">
+            <input type="number" id="jump-input" class="jump-input" placeholder="Jump #" min="0" max="9999">
+            <button id="btn-jump" class="btn-jump" title="Jump directly to code">Go</button>
+          </div>
+        </div>
+
+        <div class="view-and-stats">
+          <span id="results-count" class="results-stat">Showing 10,000 items</span>
+          <div class="view-toggles">
+            <button id="btn-view-table" class="view-toggle active" title="Table View" aria-label="Table View">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 6h18M3 12h18M3 18h18"></path>
+              </svg>
+              <span>Table</span>
+            </button>
+            <button id="btn-view-grid" class="view-toggle" title="Grid View" aria-label="Grid View">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"></rect>
+                <rect x="14" y="3" width="7" height="7"></rect>
+                <rect x="14" y="14" width="7" height="7"></rect>
+                <rect x="3" y="14" width="7" height="7"></rect>
+              </svg>
+              <span>Grid</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Table / Grid Container -->
+    <main class="main-content">
+      
+      <!-- Table View Container -->
+      <div id="table-container" class="table-container">
+        <table class="ascii-table">
+          <thead>
+            <tr>
+              <th class="col-fav" title="Favorite">⭐</th>
+              <th class="col-code">Code</th>
+              <th class="col-alt">Alt Combination</th>
+              <th class="col-glyph">Symbol</th>
+              <th class="col-name">Name &amp; Aliases</th>
+              <th class="col-cat">Category</th>
+              <th class="col-copy">Action</th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <!-- Dynamically populated via high-speed chunk renderer -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Grid View Container -->
+      <div id="grid-container" class="grid-container" style="display: none;">
+        <!-- Dynamically populated cards -->
+      </div>
+
+      <!-- Infinite Scroll Anchor / Loader -->
+      <div id="scroll-anchor" class="scroll-anchor">
+        <div id="load-spinner" class="spinner" style="display: none;"></div>
+        <span id="load-status" class="load-status"></span>
+      </div>
+
+    </main>
+
+    <!-- Bottom Mobile Toolbar -->
+    <nav class="mobile-bottom-bar">
+      <button class="mobile-nav-btn" id="m-btn-top">
+        <span class="m-icon">⬆️</span>
+        <span>Top</span>
+      </button>
+      <button class="mobile-nav-btn" id="m-btn-search">
+        <span class="m-icon">🔍</span>
+        <span>Search</span>
+      </button>
+      <button class="mobile-nav-btn" id="m-btn-favs">
+        <span class="m-icon">⭐</span>
+        <span>Favorites</span>
+      </button>
+      <button class="mobile-nav-btn" id="m-btn-guide">
+        <span class="m-icon">⌨️</span>
+        <span>Alt Guide</span>
+      </button>
+    </nav>
+
+    <!-- Modals -->
+    
+    <!-- Alt Code Guide Modal -->
+    <div id="modal-guide" class="modal-backdrop" style="display: none;">
+      <div class="modal-box">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <span class="modal-icon">⌨️</span>
+            <h3>How Alt Codes Work</h3>
+          </div>
+          <button class="modal-close" data-close="modal-guide">✕</button>
+        </div>
+        <div class="modal-body">
+          <section class="guide-section">
+            <h4>1. Using Alt Codes on Windows</h4>
+            <ol class="guide-steps">
+              <li>Ensure <strong>Num Lock</strong> is ON on your numeric keypad.</li>
+              <li>Press and <strong>HOLD</strong> the <kbd class="kbd">Alt</kbd> key on the left side of your keyboard.</li>
+              <li>Type the numeric digits on the <strong>numeric keypad</strong> (not top number row).</li>
+              <li>Release the <kbd class="kbd">Alt</kbd> key: the symbol appears instantly!</li>
+            </ol>
+          </section>
+
+          <section class="guide-section">
+            <h4>2. Why Alt+0177 vs Alt+241?</h4>
+            <div class="guide-comparison">
+              <div class="compare-card">
+                <span class="badge-tag">With Leading 0 (ANSI / CP1252)</span>
+                <p>Typing a leading zero (e.g. <code>Alt + 0177</code> for <strong>±</strong>, <code>Alt + 0137</code> for <strong>‰</strong>, <code>Alt + 0181</code> for <strong>µ</strong>) uses the Windows ANSI character set.</p>
+              </div>
+              <div class="compare-card">
+                <span class="badge-tag">Without Leading 0 (OEM / CP437)</span>
+                <p>Typing without leading zero (e.g. <code>Alt + 241</code> for <strong>±</strong>, <code>Alt + 3</code> for <strong>♥</strong>, <code>Alt + 1</code> for <strong>☺</strong>) uses original IBM PC / DOS code page 437.</p>
+              </div>
+            </div>
+          </section>
+
+          <section class="guide-section">
+            <h4>3. 4-Digit Unicode Alt Codes (Word / WordPad / RichEdit)</h4>
+            <p>In modern editors, you can type any decimal number up to 4 digits: e.g. <code>Alt + 8240</code> produces <strong>‰</strong> (permille), and <code>Alt + 8364</code> produces <strong>€</strong> (euro)!</p>
+          </section>
+
+          <section class="guide-section">
+            <h4>4. How to Use this App on Smartphone</h4>
+            <ul class="guide-tips">
+              <li><strong>Tap any sign</strong> to view details and copy it directly to your clipboard.</li>
+              <li><strong>Long-press (hold) any sign</strong> to pin it to your Favorites bar at the top!</li>
+              <li><strong>Search digits or names</strong>: type <code>177</code>, <code>0137</code>, <code>plus minus</code>, or <code>mu</code> to instantly find the character.</li>
+            </ul>
+          </section>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-action primary" data-close="modal-guide">Got it!</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PWA Install Guide Modal (for iOS & Android) -->
+    <div id="modal-install" class="modal-backdrop" style="display: none;">
+      <div class="modal-box">
+        <div class="modal-header">
+          <div class="modal-title-group">
+            <span class="modal-icon">📲</span>
+            <h3>Install AltCode App</h3>
+          </div>
+          <button class="modal-close" data-close="modal-install">✕</button>
+        </div>
+        <div class="modal-body">
+          <div id="install-android-content">
+            <p class="install-lead">Install this web app on your home screen for quick offline access anytime without an app store.</p>
+            <button id="btn-trigger-pwa" class="btn-action primary btn-block">
+              <span>Install to Home Screen</span>
+            </button>
+          </div>
+
+          <div id="install-ios-content" class="install-ios-guide">
+            <p class="install-lead">To install on your <strong>iPhone or iPad</strong>:</p>
+            <ol class="ios-steps">
+              <li>
+                <div class="step-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                    <polyline points="16 6 12 2 8 6"></polyline>
+                    <line x1="12" y1="2" x2="12" y2="15"></line>
+                  </svg>
+                </div>
+                <div>Tap the <strong>Share button</strong> in Safari's toolbar.</div>
+              </li>
+              <li>
+                <div class="step-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="12" y1="8" x2="12" y2="16"></line>
+                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                  </svg>
+                </div>
+                <div>Scroll down and select <strong>"Add to Home Screen"</strong>.</div>
+              </li>
+              <li>
+                <div class="step-icon">✓</div>
+                <div>Tap <strong>"Add"</strong> in the top-right corner.</div>
+              </li>
+            </ol>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-action secondary" data-close="modal-install">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+  </div><!-- End App Layout -->
+
+  <!-- Load Comprehensive 0-9999 Dataset -->
+  <script src="ascii_data.js"></script>
+  <!-- Main Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
