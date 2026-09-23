@@ -52,6 +52,9 @@
   const inspectorSecPill = document.getElementById('inspector-sec-pill');
   const inspectorFavBtn = document.getElementById('inspector-fav-btn');
   const inspectorFavIcon = document.getElementById('inspector-fav-icon');
+  const inspectorCard = document.getElementById('inspector-card');
+  const btnToggleInspector = document.getElementById('btn-toggle-inspector');
+  const inspectorToggleIcon = document.getElementById('inspector-toggle-icon');
   const btnCopyAlt = document.getElementById('btn-copy-alt');
   const btnCopySymbol = document.getElementById('btn-copy-symbol');
   const btnCopyCode = document.getElementById('btn-copy-code');
@@ -587,12 +590,12 @@
         </button>
       </td>
       <td class="col-code">${code}</td>
-      <td class="col-alt">
+      <td class="col-glyph" data-copy-glyph="${code}" title="Tap to copy symbol">
+        ${isCtrl && ctrlBadge ? `<span class="table-ctrl-badge">${ctrlBadge}</span>` : `<span class="table-glyph">${glyphStr}</span>`}
+      </td>
+      <td class="col-alt" data-copy-alt="${code}" title="Tap to copy Alt code">
         <span class="alt-combo-badge">${primaryAlt}</span>
         ${secAlt ? `<span class="alt-combo-secondary">${secAlt}</span>` : ''}
-      </td>
-      <td class="col-glyph">
-        ${isCtrl && ctrlBadge ? `<span class="table-ctrl-badge">${ctrlBadge}</span>` : `<span class="table-glyph">${glyphStr}</span>`}
       </td>
       <td class="col-name">
         <span class="table-name">${rec.name(item)}</span>
@@ -606,20 +609,29 @@
       </td>
     `;
 
-    // Row click: inspect and highlight
+    // Row click: inspect and highlight (and copy on mobile)
     tr.addEventListener('click', (e) => {
       if (e.target.closest('[data-fav-btn]')) {
         e.stopPropagation();
         toggleFavorite(code);
         return;
       }
-      if (e.target.closest('[data-copy]')) {
+      if (e.target.closest('[data-copy]') || e.target.closest('[data-copy-glyph]')) {
         e.stopPropagation();
         inspectCharacter(code);
         copyToClipboard(glyphStr, `Copied '${glyphStr}' to clipboard!`);
         return;
       }
+      if (e.target.closest('[data-copy-alt]')) {
+        e.stopPropagation();
+        inspectCharacter(code);
+        copyToClipboard(primaryAlt, `Copied '${primaryAlt}' to clipboard!`);
+        return;
+      }
       inspectCharacter(code);
+      if (window.innerWidth <= 768) {
+        copyToClipboard(glyphStr, `Copied '${glyphStr}' (${primaryAlt})`);
+      }
     });
 
     // Long press to favorite on whole row or glyph box
@@ -746,6 +758,25 @@
     inspectorFavBtn.addEventListener('click', () => {
       toggleFavorite(selectedCode);
     });
+
+    if (btnToggleInspector) {
+      btnToggleInspector.addEventListener('click', () => {
+        const isCollapsed = inspectorCard.classList.toggle('is-collapsed');
+        inspectorToggleIcon.textContent = isCollapsed ? '+' : '−';
+        btnToggleInspector.title = isCollapsed ? 'Expand Inspector' : 'Minimize Inspector';
+        try {
+          localStorage.setItem('altcode_inspector_collapsed', isCollapsed ? 'true' : 'false');
+        } catch (e) {}
+      });
+
+      try {
+        if (localStorage.getItem('altcode_inspector_collapsed') === 'true') {
+          inspectorCard.classList.add('is-collapsed');
+          inspectorToggleIcon.textContent = '+';
+          btnToggleInspector.title = 'Expand Inspector';
+        }
+      } catch (e) {}
+    }
 
     // Long press on inspector glyph box to favorite / click to copy
     setupLongPress(inspectorGlyphBox, () => toggleFavorite(selectedCode));
