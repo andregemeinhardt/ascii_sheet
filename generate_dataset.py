@@ -463,112 +463,64 @@ print(f"ascii_data.js created: {len(js_content.encode('utf-8')) / 1024:.1f} KB, 
 # Generate icons
 os.makedirs("icons", exist_ok=True)
 
-# Generate high quality SVG icon
+# Generate high quality SVG icon (black background, ASCII on top, # underneath)
 svg_icon = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0f172a" />
-      <stop offset="100%" stop-color="#020617" />
-    </linearGradient>
-    <linearGradient id="primary" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#38bdf8" />
-      <stop offset="100%" stop-color="#6366f1" />
-    </linearGradient>
-    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#f43f5e" />
-      <stop offset="100%" stop-color="#fb923c" />
-    </linearGradient>
-    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="16" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
-    </filter>
-  </defs>
-  <!-- Background -->
-  <rect width="512" height="512" rx="112" fill="url(#bg)" />
-  <rect x="8" y="8" width="496" height="496" rx="104" fill="none" stroke="#1e293b" stroke-width="4" />
-  
-  <!-- Keycap base: Alt Key -->
-  <g transform="translate(64, 80)">
-    <!-- Keyboard key frame -->
-    <rect x="0" y="0" width="168" height="110" rx="20" fill="#1e293b" stroke="#334155" stroke-width="3" />
-    <rect x="6" y="6" width="156" height="88" rx="16" fill="#0f172a" />
-    <text x="84" y="62" font-family="system-ui, -apple-system, sans-serif" font-weight="800" font-size="34" fill="#94a3b8" text-anchor="middle">ALT</text>
-  </g>
-  
-  <!-- Plus Symbol -->
-  <text x="264" y="152" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="44" fill="#64748b" text-anchor="middle">+</text>
-
-  <!-- Number Keycap: 0177 -->
-  <g transform="translate(304, 80)">
-    <rect x="0" y="0" width="144" height="110" rx="20" fill="#1e293b" stroke="#334155" stroke-width="3" />
-    <rect x="6" y="6" width="132" height="88" rx="16" fill="#0f172a" />
-    <text x="72" y="62" font-family="monospace, Courier" font-weight="800" font-size="30" fill="#38bdf8" text-anchor="middle">0177</text>
-  </g>
-
-  <!-- Giant Glowing Symbol in center: ± -->
-  <g filter="url(#glow)">
-    <text x="256" y="380" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="180" fill="url(#primary)" text-anchor="middle">±</text>
-  </g>
-
-  <!-- Small accent symbols around -->
-  <text x="96" y="440" font-family="system-ui, sans-serif" font-weight="bold" font-size="52" fill="#818cf8" text-anchor="middle">‰</text>
-  <text x="416" y="440" font-family="system-ui, sans-serif" font-weight="bold" font-size="52" fill="#f43f5e" text-anchor="middle">µ</text>
-  <text x="96" y="270" font-family="system-ui, sans-serif" font-weight="bold" font-size="44" fill="#34d399" text-anchor="middle">∞</text>
-  <text x="416" y="270" font-family="system-ui, sans-serif" font-weight="bold" font-size="44" fill="#fbbf24" text-anchor="middle">€</text>
-</svg>'''
+  <rect width="512" height="512" rx="96" fill="#000000" />
+  <text x="256" y="205" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'DejaVu Sans', sans-serif" font-weight="900" font-size="116" letter-spacing="4" fill="#ffffff" text-anchor="middle">ASCII</text>
+  <text x="256" y="395" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'DejaVu Sans', sans-serif" font-weight="900" font-size="230" fill="#ffffff" text-anchor="middle">#</text>
+</svg>
+'''
 
 with open("icons/icon.svg", "w", encoding="utf-8") as f:
     f.write(svg_icon)
 
 # Generate PNG icons using Pillow
-def create_png_icon(size, filename):
-    img = Image.new("RGBA", (size, size), (15, 23, 42, 255))
+font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+
+def create_png_icon(size, filename, is_squircle=False):
+    scale = 2
+    canvas_size = size * scale
+    img = Image.new("RGBA", (canvas_size, canvas_size), (0, 0, 0, 255))
     draw = ImageDraw.Draw(img)
     
-    # Rounded corners
-    r = int(size * 0.22)
-    # Border
-    draw.rounded_rectangle([2, 2, size - 3, size - 3], radius=r, outline=(51, 65, 85, 255), width=max(2, size // 100))
+    s = canvas_size / 512.0
+    f_ascii = ImageFont.truetype(font_path, int(116 * s))
+    f_hash = ImageFont.truetype(font_path, int(230 * s))
     
-    # Header badges (ALT + 0177)
-    # Scale coordinates
-    s = size / 512.0
-    
-    # Alt button
-    alt_box = [int(64 * s), int(70 * s), int(220 * s), int(170 * s)]
-    draw.rounded_rectangle(alt_box, radius=int(14 * s), fill=(30, 41, 59, 255), outline=(71, 85, 105, 255), width=max(1, int(3 * s)))
-    
-    # 0177 button
-    num_box = [int(290 * s), int(70 * s), int(448 * s), int(170 * s)]
-    draw.rounded_rectangle(num_box, radius=int(14 * s), fill=(30, 41, 59, 255), outline=(56, 189, 248, 255), width=max(1, int(3 * s)))
-    
-    # Draw simple text using default font or drawn shapes
-    # Let's draw the symbols nicely
-    # Central ± symbol:
-    # Horizontal line
-    cx = size // 2
-    cy = int(size * 0.62)
-    bar_w = int(size * 0.44)
-    bar_h = max(4, int(size * 0.05))
-    
-    # Plus vertical
-    draw.rectangle([cx - bar_h // 2, cy - bar_w // 2, cx + bar_h // 2, cy + bar_w // 2 - int(size * 0.08)], fill=(56, 189, 248, 255))
-    # Plus horizontal
-    draw.rectangle([cx - bar_w // 2, cy - int(size * 0.04), cx + bar_w // 2, cy - int(size * 0.04) + bar_h], fill=(56, 189, 248, 255))
-    # Minus horizontal
-    draw.rectangle([cx - bar_w // 2, cy + int(size * 0.15), cx + bar_w // 2, cy + int(size * 0.15) + bar_h], fill=(99, 102, 241, 255))
-    
-    # Accent dots (permille style dots)
-    d_r = max(3, int(size * 0.04))
-    draw.ellipse([int(size * 0.2) - d_r, int(size * 0.45) - d_r, int(size * 0.2) + d_r, int(size * 0.45) + d_r], fill=(129, 140, 248, 255))
-    draw.ellipse([int(size * 0.8) - d_r, int(size * 0.78) - d_r, int(size * 0.8) + d_r, int(size * 0.78) + d_r], fill=(244, 63, 94, 255))
-    draw.ellipse([int(size * 0.8) - d_r, int(size * 0.45) - d_r, int(size * 0.8) + d_r, int(size * 0.45) + d_r], fill=(52, 211, 153, 255))
+    b_ascii = draw.textbbox((0, 0), "ASCII", font=f_ascii)
+    w_ascii = b_ascii[2] - b_ascii[0]
+    h_ascii = b_ascii[3] - b_ascii[1]
 
-    img.save(filename)
+    b_hash = draw.textbbox((0, 0), "#", font=f_hash)
+    w_hash = b_hash[2] - b_hash[0]
+    h_hash = b_hash[3] - b_hash[1]
+
+    gap = int(24 * s)
+    total_h = h_ascii + gap + h_hash
+    start_y = (canvas_size - total_h) // 2
+
+    x_ascii = (canvas_size - w_ascii) // 2 - b_ascii[0]
+    y_ascii = start_y - b_ascii[1]
+
+    x_hash = (canvas_size - w_hash) // 2 - b_hash[0]
+    y_hash = start_y + h_ascii + gap - b_hash[1]
+
+    draw.text((x_ascii, y_ascii), "ASCII", font=f_ascii, fill=(255, 255, 255, 255))
+    draw.text((x_hash, y_hash), "#", font=f_hash, fill=(255, 255, 255, 255))
+    
+    if is_squircle:
+        mask = Image.new("L", (canvas_size, canvas_size), 0)
+        mask_draw = ImageDraw.Draw(mask)
+        r = int(canvas_size * 0.18)
+        mask_draw.rounded_rectangle([0, 0, canvas_size - 1, canvas_size - 1], radius=r, fill=255)
+        img.putalpha(mask)
+    
+    final_img = img.resize((size, size), Image.Resampling.LANCZOS)
+    final_img.save(filename)
     print(f"Created {filename} ({size}x{size})")
 
-create_png_icon(192, "icons/icon-192.png")
-create_png_icon(512, "icons/icon-512.png")
-create_png_icon(180, "icons/apple-touch-icon.png")
-create_png_icon(64, "icons/favicon.png")
+create_png_icon(512, "icons/icon-512.png", is_squircle=False)
+create_png_icon(192, "icons/icon-192.png", is_squircle=False)
+create_png_icon(180, "icons/apple-touch-icon.png", is_squircle=False)
+create_png_icon(64, "icons/favicon.png", is_squircle=True)
 print("Icons generated successfully.")
