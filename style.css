@@ -505,8 +505,30 @@ body {
   border-color: rgba(96, 165, 250, 0.2);
 }
 
-.tag-code, .tag-hex, .tag-html {
+.tag-code, .tag-hex, .tag-html, .tag-latex {
   font-family: var(--font-mono);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  user-select: none;
+}
+
+.tag-code:hover, .tag-hex:hover, .tag-html:hover, .tag-latex:hover {
+  filter: brightness(1.2);
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+
+.tag-latex {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.28);
+  font-weight: 600;
+}
+
+body.theme-light .tag-latex {
+  color: #059669;
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.3);
 }
 
 .btn-fav {
@@ -1637,7 +1659,15 @@ kbd, .kbd, .kbd-alt, .kbd-num {
   }
 
   .inspector-tags {
-    display: none !important; /* Hide extra badges in mobile inspector */
+    display: flex !important;
+    gap: 4px !important;
+    flex-wrap: wrap !important;
+    margin-top: 2px !important;
+  }
+
+  .tag {
+    font-size: 0.65rem !important;
+    padding: 1px 5px !important;
   }
 
   .alt-key-banner {

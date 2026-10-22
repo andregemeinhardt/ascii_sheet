@@ -47,6 +47,7 @@
   const inspectorCodeDec = document.getElementById('inspector-code-dec');
   const inspectorCodeHex = document.getElementById('inspector-code-hex');
   const inspectorCodeHtml = document.getElementById('inspector-code-html');
+  const inspectorCodeLatex = document.getElementById('inspector-code-latex');
   const inspectorPrimaryNum = document.getElementById('inspector-primary-num');
   const inspectorSecondaryAlt = document.getElementById('inspector-secondary-alt');
   const inspectorSecPill = document.getElementById('inspector-sec-pill');
@@ -89,7 +90,7 @@
   const mBtnGuide = document.getElementById('m-btn-guide');
 
   // --- Helper Record Accessors ---
-  // Record structure: [code, display_glyph, name, category, alt_ansi, alt_oem, primary_alt, secondary_alt, html_ent, alias_str, is_ctrl, ctrl_badge]
+  // Record structure: [code, display_glyph, name, category, alt_ansi, alt_oem, primary_alt, secondary_alt, html_ent, alias_str, is_ctrl, ctrl_badge, latex]
   const rec = {
     code: (r) => r[0],
     glyph: (r) => r[1],
@@ -102,7 +103,8 @@
     html: (r) => r[8],
     aliases: (r) => r[9],
     isCtrl: (r) => r[10] === 1,
-    ctrlBadge: (r) => r[11]
+    ctrlBadge: (r) => r[11],
+    latex: (r) => r[12] || ''
   };
 
   // --- Initialization ---
@@ -130,7 +132,7 @@
       console.warn('ASCII_DATA not preloaded, generating fallback range...');
       allRecords = [];
       for (let i = 0; i <= 9999; i++) {
-        allRecords.push([i, String.fromCodePoint(i), `Character U+${i.toString(16).toUpperCase()}`, 'General', '', '', `Alt + ${i}`, '', '', '', 0, '']);
+        allRecords.push([i, String.fromCodePoint(i), `Character U+${i.toString(16).toUpperCase()}`, 'General', '', '', `Alt + ${i}`, '', '', '', 0, '', '']);
       }
     }
   }
@@ -262,6 +264,17 @@
     inspectorCodeDec.textContent = `Code: ${code}`;
     inspectorCodeHex.textContent = hexStr;
     inspectorCodeHtml.textContent = htmlEntity;
+
+    const latexCmd = rec.latex(item);
+    if (inspectorCodeLatex) {
+      if (latexCmd) {
+        inspectorCodeLatex.textContent = latexCmd;
+        inspectorCodeLatex.style.display = 'inline-block';
+      } else {
+        inspectorCodeLatex.textContent = '';
+        inspectorCodeLatex.style.display = 'none';
+      }
+    }
 
     // Alt key badge
     const primaryDigits = primaryAltStr.replace('Alt + ', '');
@@ -420,6 +433,18 @@
         // 3. Text Name & Alias Match (e.g. "plus minus", "mu", "permille", "euro", etc.)
         const nameWords = name.match(/[a-z0-9+-]+/g) || [];
         const aliasWords = aliases.match(/[a-z0-9+-]+/g) || [];
+        const latex = rec.latex(item);
+
+        if (latex) {
+          const lLower = latex.toLowerCase();
+          const lClean = lLower.replace(/[\{\}\\]/g, '');
+          const qClean = qLower.replace(/[\{\}\\]/g, '');
+          if (qLower === lLower || (qClean && qClean === lClean)) {
+            score += 1500;
+          } else if (lLower.includes(qLower) || (qClean.length >= 2 && lClean.includes(qClean))) {
+            score += 750;
+          }
+        }
 
         if (name === qLower) {
           score += 1200;
@@ -754,6 +779,41 @@
     btnCopyCode.addEventListener('click', () => {
       copyToClipboard(selectedCode.toString(), `Copied code '${selectedCode}' to clipboard!`);
     });
+
+    if (inspectorCodeDec) {
+      inspectorCodeDec.addEventListener('click', () => {
+        copyToClipboard(selectedCode.toString(), `Copied decimal code '${selectedCode}' to clipboard!`);
+      });
+    }
+
+    if (inspectorCodeHex) {
+      inspectorCodeHex.addEventListener('click', () => {
+        const hexStr = 'U+' + selectedCode.toString(16).toUpperCase().padStart(4, '0');
+        copyToClipboard(hexStr, `Copied hex code '${hexStr}' to clipboard!`);
+      });
+    }
+
+    if (inspectorCodeHtml) {
+      inspectorCodeHtml.addEventListener('click', () => {
+        const item = allRecords[selectedCode];
+        if (item) {
+          const ent = rec.html(item) ? `&${rec.html(item)};` : `&#${selectedCode};`;
+          copyToClipboard(ent, `Copied HTML entity '${ent}' to clipboard!`);
+        }
+      });
+    }
+
+    if (inspectorCodeLatex) {
+      inspectorCodeLatex.addEventListener('click', () => {
+        const item = allRecords[selectedCode];
+        if (item) {
+          const cmd = rec.latex(item);
+          if (cmd) {
+            copyToClipboard(cmd, `Copied LaTeX command '${cmd}' to clipboard!`);
+          }
+        }
+      });
+    }
 
     inspectorFavBtn.addEventListener('click', () => {
       toggleFavorite(selectedCode);

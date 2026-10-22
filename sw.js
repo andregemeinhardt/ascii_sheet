@@ -1,4 +1,4 @@
-const CACHE_NAME = 'alt-code-v3';
+const CACHE_NAME = 'alt-code-v4';
 const ASSETS = [
   './',
   './index.html',
